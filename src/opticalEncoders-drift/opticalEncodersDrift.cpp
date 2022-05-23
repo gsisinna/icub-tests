@@ -345,6 +345,12 @@ void OpticalEncodersDrift::run()
     time_t now = time(0);
     tm *ltm = localtime(&now);
 
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", ltm);
+    std::string str(buffer);
+    std::cout << str;
+
+
     // cout << "Year:" << 1900 + ltm->tm_year<<endl;
     // cout << "Month: "<< 1 + ltm->tm_mon<< endl;
     // cout << "Day: "<< ltm->tm_mday << endl;
@@ -353,13 +359,9 @@ void OpticalEncodersDrift::run()
     // cout << ltm->tm_sec << endl;
 
     std::string filename = "encDrift_plot_";
-
     filename += partName;
-    filename += ltm->tm_year;
-    filename += ltm->tm_mon;
-    filename += ltm->tm_mday;
-    filename += 5+ltm->tm_hour;
-    filename += 30+ltm->tm_min;
+    filename += "_";
+    filename += str;
     filename += ".txt";
 
     int num_j = jointsList.size();
