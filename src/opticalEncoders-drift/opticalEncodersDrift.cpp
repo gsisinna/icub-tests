@@ -31,6 +31,7 @@
 #include "opticalEncodersDrift.h"
 #include <iostream>
 #include <ctime>
+#include <filesystem>
 
 //example     -v -t OpticalEncodersDrift.dll -p "--robot icub --part head --joints ""(0 1 2)"" --home ""(0 0 0)" --speed "(20 20 20)" --max "(10 10 10)" --min "(-10 -10 -10)" --cycles 100 --tolerance 1.0 "
 //example2    -v -t OpticalEncodersDrift.dll -p "--robot icub --part head --joints ""(2)""     --home ""(0)""    --speed "(20      )" --max "(10      )" --min "(-10)"         --cycles 100 --tolerance 1.0 "
@@ -39,6 +40,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::math;
 using namespace std;
+namespace fs = std::filesystem;
 
 // prepare the plugin
 ROBOTTESTINGFRAMEWORK_PREPARE_PLUGIN(OpticalEncodersDrift)
@@ -149,6 +151,17 @@ bool OpticalEncodersDrift::setup(yarp::os::Property& property) {
 void OpticalEncodersDrift::tearDown()
 {
     if (dd) {delete dd; dd =0;}
+
+    // Create directory structure
+    std::string directory_tree = "results/robotName1/suite1/encDrift";
+    auto ret = fs::create_directories(directory_tree);
+
+    if (ret) {
+        cout << "created directory tree as follows: " << endl;
+        std::system("tree results");
+    } else {
+        cout << "create_directories() failed" << endl;
+    }
 }
 
 void OpticalEncodersDrift::setMode(int desired_mode)
@@ -332,15 +345,21 @@ void OpticalEncodersDrift::run()
     time_t now = time(0);
     tm *ltm = localtime(&now);
 
-    cout << "Year:" << 1900 + ltm->tm_year<<endl;
-    cout << "Month: "<< 1 + ltm->tm_mon<< endl;
-    cout << "Day: "<< ltm->tm_mday << endl;
-    cout << "Time: "<< 5+ltm->tm_hour << ":";
-    cout << 30+ltm->tm_min << ":";
-    cout << ltm->tm_sec << endl;
+    // cout << "Year:" << 1900 + ltm->tm_year<<endl;
+    // cout << "Month: "<< 1 + ltm->tm_mon<< endl;
+    // cout << "Day: "<< ltm->tm_mday << endl;
+    // cout << "Time: "<< 5+ltm->tm_hour << ":";
+    // cout << 30+ltm->tm_min << ":";
+    // cout << ltm->tm_sec << endl;
 
     std::string filename = "encDrift_plot_";
+
     filename += partName;
+    filename += ltm->tm_year;
+    filename += ltm->tm_mon;
+    filename += ltm->tm_mday;
+    filename += 5+ltm->tm_hour;
+    filename += 30+ltm->tm_min;
     filename += ".txt";
 
     int num_j = jointsList.size();
