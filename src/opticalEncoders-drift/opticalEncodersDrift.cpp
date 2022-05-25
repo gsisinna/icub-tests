@@ -80,6 +80,7 @@ bool OpticalEncodersDrift::setup(yarp::os::Property& property) {
     ROBOTTESTINGFRAMEWORK_ASSERT_ERROR_IF_FALSE(property.check("tolerance"), "The max error tolerance must be given as the test parameter!");
 
     robotName = property.find("robot").asString();
+    
     partName = property.find("part").asString();
 
     Bottle* jointsBottle = property.find("joints").asList();
@@ -151,17 +152,13 @@ bool OpticalEncodersDrift::setup(yarp::os::Property& property) {
 void OpticalEncodersDrift::tearDown()
 {
     if (dd) {delete dd; dd =0;}
+    
+    // // Current path check
+    // std::cout << "Current path is " << fs::current_path() << '\n'; // (1)
+    
+    // fs::current_path("..");
+    // std::cout << "Current path is " << fs::current_path() << '\n'; // (1)
 
-    // Create directory structure
-    std::string directory_tree = "results/robotName1/suite1/encDrift";
-    auto ret = fs::create_directories(directory_tree);
-
-    if (ret) {
-        cout << "created directory tree as follows: " << endl;
-        std::system("tree results");
-    } else {
-        cout << "create_directories() failed" << endl;
-    }
 }
 
 void OpticalEncodersDrift::setMode(int desired_mode)
@@ -342,33 +339,41 @@ void OpticalEncodersDrift::run()
         }
     }
 
+    // Get the current time
     time_t now = time(0);
     tm *ltm = localtime(&now);
 
     char buffer[80];
-    strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", ltm);
-    std::string str(buffer);
-    std::cout << str;
+    char buffer_min[80];
+
+    strftime(buffer, sizeof(buffer), "%d%m%Y", ltm);
+    strftime(buffer_min, sizeof(buffer_min), "%d%m%Y_%H%M", ltm);
+
+    std::string time_str(buffer);
+    std::string min_str(buffer_min);
 
 
-    // cout << "Year:" << 1900 + ltm->tm_year<<endl;
-    // cout << "Month: "<< 1 + ltm->tm_mon<< endl;
-    // cout << "Day: "<< ltm->tm_mday << endl;
-    // cout << "Time: "<< 5+ltm->tm_hour << ":";
-    // cout << 30+ltm->tm_min << ":";
-    // cout << ltm->tm_sec << endl;
-
+    // Create the filename with date and time
     std::string filename = "encDrift_plot_";
     filename += partName;
     filename += "_";
-    filename += str;
+    filename += min_str;
     filename += ".txt";
 
     int num_j = jointsList.size();
+
+    // Navigate to results directory
+    std::cout << "Starting path is " << fs::current_path() << '\n'; // (1)
+    
+    std::string directory_tree = "results/" + robotName + "/encoders-icub_" + time_str + "/encDrift";
+    auto ret = fs::create_directories(directory_tree);
+
+    fs::current_path(directory_tree);
+
     saveToFile(filename,dataToPlot);
+    std::cout << "Saved files in: " << fs::current_path() << '\n'; // (1)
 
     char plotstring[1000];
-    //gnuplot -e "unset key; plot for [col=1:6] 'C:\software\icub-tests\build\plugins\Debug\plot.txt' using col with lines" -persist
     sprintf (plotstring, "gnuplot -e \" unset key; plot for [col=1:%d] '%s' using col with lines \" -persist", num_j,filename.c_str());
 
     if(plot)
@@ -380,6 +385,10 @@ void OpticalEncodersDrift::run()
         ROBOTTESTINGFRAMEWORK_TEST_REPORT("Test is finished. Please check if collected date are ok, by using following command: ");
         ROBOTTESTINGFRAMEWORK_TEST_REPORT(robottestingframework::Asserter::format("%s", plotstring));
     }
+
+    // Go back to the previous level
+    fs::current_path("../../../..");
+    std::cout << "Going back to: " << fs::current_path() << '\n'; // (1)
 
     ROBOTTESTINGFRAMEWORK_ASSERT_ERROR_IF_FALSE(isInHome, "This part is not in home. Suite test will be terminated!");
 
