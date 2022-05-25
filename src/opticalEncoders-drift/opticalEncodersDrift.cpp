@@ -152,7 +152,7 @@ bool OpticalEncodersDrift::setup(yarp::os::Property& property) {
 void OpticalEncodersDrift::tearDown()
 {
     if (dd) {delete dd; dd =0;}
-    
+
     // // Current path check
     // std::cout << "Current path is " << fs::current_path() << '\n'; // (1)
     
@@ -364,8 +364,13 @@ void OpticalEncodersDrift::run()
 
     // Navigate to results directory
     std::cout << "Starting path is " << fs::current_path() << '\n'; // (1)
+
+    char* robot_env;
+    robot_env = std::getenv ("YARP_ROBOT_NAME");
+
+    std::string robot_str(robot_env);
     
-    std::string directory_tree = "results/" + robotName + "/encoders-icub_" + time_str + "/encDrift";
+    std::string directory_tree = "results/" + robot_str + "/encoders-icub_" + time_str + "/encDrift";
     auto ret = fs::create_directories(directory_tree);
 
     fs::current_path(directory_tree);
