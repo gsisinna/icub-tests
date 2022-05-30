@@ -368,7 +368,11 @@ void OpticalEncodersDrift::run()
     char* robot_env;
     robot_env = std::getenv ("YARP_ROBOT_NAME");
 
-    std::string robot_str(robot_env);
+    if(robot_env){
+        std::string robot_str(robot_env);
+    }else{
+        std::string robot_str("RobotName");
+    }
     
     std::string directory_tree = "results/" + robot_str + "/encoders-icub_" + time_str + "/encDrift";
     auto ret = fs::create_directories(directory_tree);
