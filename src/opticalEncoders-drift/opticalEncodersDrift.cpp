@@ -363,24 +363,24 @@ void OpticalEncodersDrift::run()
     int num_j = jointsList.size();
 
     // Navigate to results directory
-    std::cout << "Starting path is " << fs::current_path() << '\n'; // (1)
+    std::cout << "Starting path is " << fs::current_path() << '\n';
 
     char* robot_env;
     robot_env = std::getenv ("YARP_ROBOT_NAME");
 
-    if(robot_env){
-        std::string robot_str(robot_env);
-    }else{
-        std::string robot_str("RobotName");
+    if(!robot_env){
+        std::cout << "WARNING, NO YARP_ROBOT_NAME... " << '\n';
+        // Insert empty env variable handling 
     }
     
+    std::string robot_str(robot_env);
     std::string directory_tree = "results/" + robot_str + "/encoders-icub_" + time_str + "/encDrift";
     auto ret = fs::create_directories(directory_tree);
 
     fs::current_path(directory_tree);
 
     saveToFile(filename,dataToPlot);
-    std::cout << "Saved files in: " << fs::current_path() << '\n'; // (1)
+    std::cout << "Saved files in: " << fs::current_path() << '\n'; 
 
     char plotstring[1000];
     sprintf (plotstring, "gnuplot -e \" unset key; plot for [col=1:%d] '%s' using col with lines \" -persist", num_j,filename.c_str());
