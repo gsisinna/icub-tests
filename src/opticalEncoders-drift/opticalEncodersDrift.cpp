@@ -152,13 +152,6 @@ bool OpticalEncodersDrift::setup(yarp::os::Property& property) {
 void OpticalEncodersDrift::tearDown()
 {
     if (dd) {delete dd; dd =0;}
-
-    // // Current path check
-    // std::cout << "Current path is " << fs::current_path() << '\n'; // (1)
-    
-    // fs::current_path("..");
-    // std::cout << "Current path is " << fs::current_path() << '\n'; // (1)
-
 }
 
 void OpticalEncodersDrift::setMode(int desired_mode)
@@ -368,15 +361,20 @@ void OpticalEncodersDrift::run()
     char* robot_env;
     robot_env = std::getenv ("YARP_ROBOT_NAME");
 
+    std::string robot_str;
+
     if(!robot_env){
-        std::cout << "WARNING, NO YARP_ROBOT_NAME... " << '\n';
-        // Insert empty env variable handling 
+        std::cout << "WARNING, NO YARP_ROBOT_NAME FOUND... USING GENERIC RobotName " << '\n';
+        robot_str = string("RobotName"); 
+    }else{
+        robot_str = string(robot_env);
+        std::cout << "YARP_ROBOT_NAME FOUND: " + robot_str << '\n';
     }
     
-    std::string robot_str(robot_env);
     std::string directory_tree = "results/" + robot_str + "/encoders-icub_" + time_str + "/encDrift";
     auto ret = fs::create_directories(directory_tree);
 
+    // Moving to the save path
     fs::current_path(directory_tree);
 
     saveToFile(filename,dataToPlot);
@@ -395,7 +393,7 @@ void OpticalEncodersDrift::run()
         ROBOTTESTINGFRAMEWORK_TEST_REPORT(robottestingframework::Asserter::format("%s", plotstring));
     }
 
-    // Go back to the previous level
+    // Go back to the previous level (-4 levels)
     fs::current_path("../../../..");
     std::cout << "Going back to: " << fs::current_path() << '\n'; // (1)
 
